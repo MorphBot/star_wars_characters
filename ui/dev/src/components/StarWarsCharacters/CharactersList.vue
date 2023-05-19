@@ -14,6 +14,11 @@
   </q-list>
 </template>
 
+<style lang="sass" scoped>
+.q-item
+  padding: 16px 20px
+</style>
+
 <script>
 export default {
   props: [

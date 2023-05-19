@@ -10,10 +10,11 @@
       :has-errors="true"
       @blur="$emit('blur-input')"
       @focus="$emit('focus-input')"
+      input-class="tessst"
     >
       <template v-slot:append>
         <q-avatar>
-          <q-icon name="search" size="20px" color="primary" />
+          <q-icon name="search" size="23px" color="primary" />
         </q-avatar>
       </template>
     </q-input>

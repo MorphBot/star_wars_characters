@@ -1,11 +1,16 @@
 <template>
   <p
     v-if="message"
-    class="text-center q-mt-md"
+    class="message-holder-text text-center q-mt-md"
   >
     <span>{{ message }}</span>
   </p>
 </template>
+
+<style lang="sass" scoped>
+.message-holder-text
+  font-size: 14px
+</style>
 
 <script>
 export default {
