@@ -1,47 +1,86 @@
 <template>
-  <q-page padding class="row justify-center">
-    <q-list dense class="list">
-      <div class="text-h4 q-mb-md">Test pages</div>
-      <q-item
-        v-for="page in pages"
-        :key="page.path"
-        :to="page.path"
-      >
-        <q-item-section avatar>
-          <q-icon name="pages" />
-        </q-item-section>
-        <q-item-section>
-          {{ page.title }}
-        </q-item-section>
-        <q-item-section side>
-          <q-icon name="chevron_right" />
-        </q-item-section>
-      </q-item>
-    </q-list>
+  <q-page
+    padding
+    class="sw-page q-mx-auto"
+  >
+    <search-characters-input
+      ref="searchCharactersInput"
+      @search="getSearchCharacter"
+      @blur-input="toggle = false"
+      @focus-input="toggle = true"
+      :disable="disableInput"
+    />
+
+    <message-holder :message="message" />
+
+    <characters-list
+      v-if="toggle"
+      :characters="characters"
+      :search="searchText"
+    />
   </q-page>
 </template>
 
 <script>
-import pages from '../router/pages'
+import CharactersList from '../components/StarWarsCharacters/CharactersList.vue'
+import SearchCharactersInput from '../components/StarWarsCharacters/SeachCharactersInput.vue'
+import MessageHolder from "../components/MessageHolder.vue";
 
 export default {
-  created () {
-    this.pages = pages
+  components: {
+    MessageHolder,
+    CharactersList,
+    SearchCharactersInput
+  },
+  data() {
+    return {
+      searchText: '',
+      message: '',
+      characters: [],
+      toggle: false,
+      disableInput: false
+    }
+  },
+  methods: {
+    async getSearchCharacter(value) {
+      this.characters = [];
+      this.message = '';
+      this.searchText = value;
+
+      if ( 0 === value.length ) {
+        return;
+      }
+
+      try {
+        this.disableInput = true;
+
+        const searchResponse = await fetch('https://swapi.py4e.com/api/people/?search=' + value);
+
+        if (!searchResponse.ok) {
+          throw new Error("Network response was not OK");
+        }
+
+        const searchJson = await searchResponse.json();
+
+        if ( searchJson.count > 0 ) {
+          searchJson.results.forEach((result) => {
+            this.characters.push(result);
+          })
+        } else {
+          this.message = 'Nothing found';
+        }
+
+        this.disableInput = false;
+        this.$nextTick(() => {
+          this.$refs.searchCharactersInput.focusInput();
+        })
+      } catch (error) {
+        console.error(`Error: ${error}`);
+        this.characters = [];
+        this.message = 'Something wrong. Please try again.'
+        this.disableInput = false;
+      }
+    }
   }
 }
 </script>
-
-<style lang="scss" scoped>
-.list {
-  width: 700px;
-  max-width: 100%;
-}
-
-.fade-enter-active {
-  transition: opacity .5s;
-}
-
-.fade-enter, .fade-leave-to {
-  opacity: 0;
-}
-</style>
