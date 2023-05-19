@@ -13,6 +13,17 @@
 
     <message-holder :message="message" />
 
+    <p
+      v-if="loading"
+      class="text-center q-mt-md"
+    >
+      <q-spinner
+        color="primary"
+        size="30px"
+        :thickness="3"
+      />
+    </p>
+
     <characters-list
       v-if="toggle"
       :characters="characters"
@@ -38,7 +49,8 @@ export default {
       message: '',
       characters: [],
       toggle: false,
-      disableInput: false
+      disableInput: false,
+      loading: false
     }
   },
   methods: {
@@ -53,11 +65,13 @@ export default {
 
       try {
         this.disableInput = true;
+        this.loading = true;
 
         const searchResponse = await fetch('https://swapi.py4e.com/api/people/?search=' + value);
 
-        if (!searchResponse.ok) {
-          throw new Error("Network response was not OK");
+        if ( ! searchResponse.ok ) {
+          this.errorHandler('Search response was not OK!', 'Something went wrong. Please contact administrators.');
+          return;
         }
 
         const searchJson = await searchResponse.json();
@@ -71,15 +85,19 @@ export default {
         }
 
         this.disableInput = false;
+        this.loading = false;
         this.$nextTick(() => {
           this.$refs.searchCharactersInput.focusInput();
         })
       } catch (error) {
-        console.error(`Error: ${error}`);
-        this.characters = [];
-        this.message = 'Something wrong. Please try again.'
-        this.disableInput = false;
+        this.errorHandler(error, 'Something went wrong. Please try again.')
       }
+    },
+    errorHandler(error, message) {
+      console.error(`Error: ${error}`);
+      this.characters = [];
+      this.message = message;
+      this.disableInput = false;
     }
   }
 }
